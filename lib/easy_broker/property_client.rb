@@ -13,12 +13,14 @@ module EasyBroker
     attr_accessor :endpoint
     attr_accessor :timeout
 
+    # Creates property client.
     def initialize(api_key, endpoint, timeout=10)
       @api_key = api_key
       @endpoint = endpoint
       @timeout = timeout
     end
 
+    # Calls API. If a status 429 or >= 500 received, retries.
     def call_api(endpoint=@endpoint, base_delay=1, max_retries=3)
       retries = 0
       
@@ -51,6 +53,7 @@ module EasyBroker
       end
     end
 
+    # Iterates thro pages to print titles from paginates response.
     def print_paginated_content
       next_page = @endpoint
       begin 
@@ -69,6 +72,7 @@ module EasyBroker
 
     private
 
+    # Creates http client.
     def create_http_client(uri)
       http = Net::HTTP.new(uri.host, uri.port)
       http.use_ssl = true
@@ -77,6 +81,7 @@ module EasyBroker
       http
     end
 
+    # Creates http request.
     def create_request(uri)
       request = Net::HTTP::Get.new(uri)
       request["accept"] = 'application/json'
@@ -84,12 +89,14 @@ module EasyBroker
       request
     end
 
+    # Prints titles found in properties array.
     def print_titles_as_string(properties)
       properties.each do |property|
         puts property['title']
       end
     end
 
+    # Delays excecution with exponential backoff.
     def exp_backoff(retries=1, base_delay=1)
       delay = base_delay * (2 ** retries)
       sleep(delay)
